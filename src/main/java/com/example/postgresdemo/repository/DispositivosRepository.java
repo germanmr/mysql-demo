@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.example.postgresdemo.model.Dispositivo;
+import com.example.postgresdemo.model.PrestadorPK;
 
 @Repository
-public interface DispositivosRepository extends JpaRepository<Dispositivo, Long> {
+public interface DispositivosRepository extends JpaRepository<Dispositivo, PrestadorPK> {
 
-    List<Dispositivo> findByregistrationidIn(List<String> registrationIds);
+    List<Dispositivo> findAllBydispositivoPKPrestadorPKIn(List<PrestadorPK> id);
+
+    Dispositivo findBydispositivoPK(Dispositivo dispositivo);
 
 }

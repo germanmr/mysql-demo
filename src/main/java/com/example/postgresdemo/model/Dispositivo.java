@@ -1,81 +1,47 @@
 package com.example.postgresdemo.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "socios_dispositivos")
-public class Dispositivo {
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+public class Dispositivo implements Serializable {
 
-    @Id
-    @GeneratedValue(generator = "clavecandidata_generator")
-    @SequenceGenerator(name = "clavecandidata_generator", sequenceName = "clavecandidata_sequence", initialValue = 1)
-    private Long clavecandidata;
-
-    private String registrationid;
-
-    // @JoinColumn(updatable = true, insertable = true, name = "codigoprofesion", referencedColumnName =
-    // "socios_codigoProfesion"),
-    // @JoinColumn(updatable = true, insertable = true, name = "matriculaprofesional", referencedColumnName =
-    // "socios_matriculaprofesional")})
-
-    // @NotBlank
-    @OneToOne
-    @JoinColumns({
-        @JoinColumn(updatable = true, insertable = true, name = "codigoprofesion"),
-        @JoinColumn(updatable = true, insertable = true, name = "matriculaprofesional")})
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private PrestadorPK prestadorPK;
+    @EmbeddedId
+    private DispositivoPK dispositivoPK;
 
     public Dispositivo() {
     }
 
-    public Dispositivo(Long clavecandidata, String registrationid, PrestadorPK prestadorPK) {
-        this.clavecandidata = clavecandidata;
-        this.registrationid = registrationid;
-        this.prestadorPK = prestadorPK;
+    @JsonCreator
+    public Dispositivo(@JsonProperty("dispositivoPK") DispositivoPK dispositivoPK) {
+        this.dispositivoPK = dispositivoPK;
     }
 
-    public Long getClavecandidata() {
-        return clavecandidata;
+    public DispositivoPK getDispositivoPK() {
+        return dispositivoPK;
     }
 
-    public void setClavecandidata(Long clavecandidata) {
-        this.clavecandidata = clavecandidata;
-    }
-
-    public String getRegistrationid() {
-        return registrationid;
-    }
-
-    public void setRegistrationid(String registrationid) {
-        this.registrationid = registrationid;
-    }
-
-    public PrestadorPK getPrestadorPK() {
-        return prestadorPK;
-    }
-
-    public void setPrestadorPK(PrestadorPK prestadorPK) {
-        this.prestadorPK = prestadorPK;
+    public void setDispositivoPK(DispositivoPK dispositivoPK) {
+        this.dispositivoPK = dispositivoPK;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((clavecandidata == null) ? 0 : clavecandidata.hashCode());
-        result = prime * result + ((prestadorPK == null) ? 0 : prestadorPK.hashCode());
-        result = prime * result + ((registrationid == null) ? 0 : registrationid.hashCode());
+        result = prime * result + ((dispositivoPK == null) ? 0 : dispositivoPK.hashCode());
         return result;
     }
 
@@ -88,28 +54,17 @@ public class Dispositivo {
         if (getClass() != obj.getClass())
             return false;
         Dispositivo other = (Dispositivo) obj;
-        if (clavecandidata == null) {
-            if (other.clavecandidata != null)
+        if (dispositivoPK == null) {
+            if (other.dispositivoPK != null)
                 return false;
-        } else if (!clavecandidata.equals(other.clavecandidata))
-            return false;
-        if (prestadorPK == null) {
-            if (other.prestadorPK != null)
-                return false;
-        } else if (!prestadorPK.equals(other.prestadorPK))
-            return false;
-        if (registrationid == null) {
-            if (other.registrationid != null)
-                return false;
-        } else if (!registrationid.equals(other.registrationid))
+        } else if (!dispositivoPK.equals(other.dispositivoPK))
             return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "Dispositivo [clavecandidata=" + clavecandidata + ", registrationid=" + registrationid + ", prestadorPK=" + prestadorPK
-            + ", toString()=" + super.toString() + "]";
+        return "Dispositivo [dispositivoPK=" + dispositivoPK + ", toString()=" + super.toString() + "]";
     }
 
 }
