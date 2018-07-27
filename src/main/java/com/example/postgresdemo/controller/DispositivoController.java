@@ -1,22 +1,31 @@
 package com.example.postgresdemo.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import com.example.postgresdemo.model.Dispositivo;
+import com.example.postgresdemo.model.MensajeDispositivos;
 import com.example.postgresdemo.model.MensajeEnviado;
 import com.example.postgresdemo.model.PrestadorPK;
 import com.example.postgresdemo.model.Respuesta;
 import com.example.postgresdemo.repository.DispositivosRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class DispositivoController {
@@ -26,6 +35,9 @@ public class DispositivoController {
 
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/dispositivos")
     public List<Dispositivo> getDispositivos() {
@@ -83,13 +95,13 @@ public class DispositivoController {
     }
 
     @PostMapping("/enviar/mensaje")
-    public boolean enviarMensaje(@RequestBody MensajeEnviado mensaje) {
+    public Respuesta enviarMensaje(@RequestBody MensajeEnviado mensaje) {
         try {
 
-            // validador.validate(mensajeEnviado);
-
+            /**
+             * Construimos mensaje
+             */
             List<Dispositivo> dispositivos = repositorio.findAllBydispositivoPKPrestadorPKIn(mensaje.getPrestadores());
-            // .obtenerDispositivos(mensajeEnviado.getPrestadores());
 
             List<String> dispositivosEnviados = new ArrayList<>();
             for (Dispositivo dispositivo : dispositivos) {
@@ -97,32 +109,46 @@ public class DispositivoController {
             }
 
             if (dispositivos == null || dispositivos.size() == 0) {
-                // return new RespuestaBase(TiposRespuestaValidacion.ERROR, "No hay dispositivos registrados para los
-                // prestadores informados");
-                return false;
+                return new Respuesta("ERROR", "No hay dispositivos registrados para los prestadores informados");
             }
 
-            // String entidadJson = objec.convertToJSON(new MensajeDispositivos(mensajeEnviado.getMensaje(),
-            // dispositivos, 1));
-            String entidadJson = "";
+            final String uri = "http://tomcat-test.amr.org.ar:8080/ClienteFCM/mensajes/enviarMensajePorIds";
 
-            // RespuestaBase respuestaBase = clienteFCM.enviarMensaje(entidadJson);
+            System.out.println("Llamamos");
 
-            final String uri = "http://localhost:8080/ClienteFCM/enviarMensajePorIds";
+            /*****************************************************************************************/
 
-            RestTemplate restTemplate = new RestTemplate();
-            Respuesta result = restTemplate.getForObject(uri, Respuesta.class);
+            String mensajeJson = objectMapper.writeValueAsString(mensaje);
 
-            System.out.println(result);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // return respuestaBase;
-            return true;
+            System.out.println(mensajeJson);
+
+            Integer codigoProyecto = 1;
+            MensajeDispositivos mensajeDispositivos = new MensajeDispositivos(mensaje.getMensaje(), dispositivosEnviados, codigoProyecto);
+
+            /**
+             * Probamos como String
+             */
+
+            /**
+             * Probamos enviando la entidad
+             */
+            HttpEntity<MensajeDispositivos> solicitud = new HttpEntity<MensajeDispositivos>(mensajeDispositivos, headers);
+
+            Respuesta response = restTemplateBuilder.build().postForObject(uri, solicitud, Respuesta.class);
+
+            System.out.println(response);
+
+            /******************************************************************************************************/
+
+            return new Respuesta("OK", "");
 
         } catch (Exception e) {
-
             System.out.println(e.getMessage());
-            // return new RespuestaBase(TiposRespuestaValidacion.ERROR, e.getMessage());
-            return false;
+            return new Respuesta("ERROR", e.getMessage());
+
         }
     }
 
