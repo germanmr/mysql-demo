@@ -1,18 +1,10 @@
 package com.example.postgresdemo.controller;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,7 +17,6 @@ import com.example.postgresdemo.model.MensajeEnviado;
 import com.example.postgresdemo.model.PrestadorPK;
 import com.example.postgresdemo.model.Respuesta;
 import com.example.postgresdemo.repository.DispositivosRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class DispositivoController {
@@ -34,10 +25,10 @@ public class DispositivoController {
     private DispositivosRepository repositorio;
 
     @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
+    private ClienteRest clienteRest;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    RestTemplateBuilder restTemplateBuilder;
 
     @GetMapping("/dispositivos")
     public List<Dispositivo> getDispositivos() {
@@ -112,34 +103,15 @@ public class DispositivoController {
                 return new Respuesta("ERROR", "No hay dispositivos registrados para los prestadores informados");
             }
 
-            final String uri = "http://tomcat-test.amr.org.ar:8080/ClienteFCM/mensajes/enviarMensajePorIds";
-
-            System.out.println("Llamamos");
-
-            /*****************************************************************************************/
-
-            String mensajeJson = objectMapper.writeValueAsString(mensaje);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            System.out.println(mensajeJson);
-
             Integer codigoProyecto = 1;
             MensajeDispositivos mensajeDispositivos = new MensajeDispositivos(mensaje.getMensaje(), dispositivosEnviados, codigoProyecto);
+            /*****************************************************************************************/
 
-            /**
-             * Probamos como String
-             */
+            Respuesta respuesta = clienteRest.enviarMensajesPorId(mensajeDispositivos);
 
-            /**
-             * Probamos enviando la entidad
-             */
-            HttpEntity<MensajeDispositivos> solicitud = new HttpEntity<MensajeDispositivos>(mensajeDispositivos, headers);
-
-            Respuesta response = restTemplateBuilder.build().postForObject(uri, solicitud, Respuesta.class);
-
-            System.out.println(response);
+            if ("ERROR".equals(respuesta.getEstado())) {
+                return new Respuesta("ERROR", respuesta.getMensaje());
+            }
 
             /******************************************************************************************************/
 
