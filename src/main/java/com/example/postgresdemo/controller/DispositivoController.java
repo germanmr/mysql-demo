@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.postgresdemo.model.Dispositivo;
@@ -19,6 +20,7 @@ import com.example.postgresdemo.model.Respuesta;
 import com.example.postgresdemo.repository.DispositivosRepository;
 
 @RestController
+@RequestMapping("/dispositivos")
 public class DispositivoController {
 
     @Autowired
@@ -30,12 +32,12 @@ public class DispositivoController {
     @Autowired
     RestTemplateBuilder restTemplateBuilder;
 
-    @GetMapping("/dispositivos")
+    @GetMapping("")
     public List<Dispositivo> getDispositivos() {
         return repositorio.findAll();
     }
 
-    @PostMapping("/dispositivos/lista")
+    @PostMapping("/lista")
     // public List<Dispositivo> getDispositivosByPrestadores(@RequestParam(name = "ids") List<PrestadorPK> ids) {
     public List<Dispositivo> getDispositivosByPrestadores(@RequestBody List<PrestadorPK> ids) {
 
@@ -58,7 +60,7 @@ public class DispositivoController {
 
     }
 
-    @GetMapping("/dispositivos/todos")
+    @GetMapping("/todos")
     public List<Dispositivo> getAllDispositivos() {
         // return repositorio.findByregistrationidIn(id);
         return repositorio.findAll();
